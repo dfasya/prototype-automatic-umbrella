@@ -60,14 +60,16 @@ model is the part of this that I trust most.
 This one needs fixing before anything else, because it stops the pipeline from
 running at all on a fresh clone.
 
-`simulated_dataset/*.csv` does not contain `rain_flag`. Checked directly:
+`simulated_dataset/*.csv` does not contain `rain_flag`:
 
 ```
-simulated_dataset/2026-07.csv
-columns: timestamp, temperature, pressure, sea_pressure, humidity,
-         wind_speed, rain, wind_dir, wind_u, wind_v
-rows:    30231      2026-07-01 00:00:00 → 2026-07-07 23:58:40
+> python -c "import pandas as pd; d=pd.read_csv('simulated_dataset/2026-07.csv', nrows=1); print(d.columns.tolist()); print('rain_flag ada?', 'rain_flag' in d.columns)"
+['timestamp', 'temperature', 'pressure', 'sea_pressure', 'humidity',
+ 'wind_speed', 'rain', 'wind_dir', 'wind_u', 'wind_v']
+rain_flag ada? False
 ```
+
+The same file runs 2026-07-01 00:00:00 → 2026-07-07 23:58:40, 30,231 rows.
 
 `load_simulated()` knows this can happen and patches it from the raw files
 (`dataset.py`, lines 130–133):
@@ -78,10 +80,28 @@ if "rain_flag" not in df and raw_source is not None:
     ...
 ```
 
-But `dataset/` is git-ignored, so on a clone `load_aws("dataset")` raises
-`FileNotFoundError: No CSV files found` at line 77. Both `labeling.ipynb` and
-`training.ipynb` go through `load_simulated`, so **neither notebook runs on a
-clean clone.** Passing `raw_source=None` does not help: `add_window_features`
+But `dataset/` is git-ignored. Reproduced on a clean clone of `ee5f7d3`:
+
+```
+> python -c "from modules.dataset.dataset import load_simulated; load_simulated('simulated_dataset', start='2026-07-01', end='2026-07-08')"
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "...\modules\dataset\dataset.py", line 131, in load_simulated
+    raw = load_aws(raw_source).set_index("timestamp")
+  File "...\modules\dataset\dataset.py", line 79, in load_aws
+    frames = [pd.read_csv(p, encoding="cp949").rename(columns=COLUMNS) for p in paths]
+FileNotFoundError: [Errno 2] No such file or directory: 'dataset'
+```
+
+Note that it never reaches the guard at line 77. When the folder is absent,
+`Path("dataset").is_dir()` is False, so `paths` becomes `[Path("dataset")]`,
+which is not empty, and `pd.read_csv` fails on it instead. The clearer
+`"No CSV files found."` message only appears when the folder exists but holds
+no CSVs. A check on `source.exists()` would make the common case readable.
+
+Both `labeling.ipynb` and `training.ipynb` go through `load_simulated`, so
+**neither notebook runs on a clean clone.** Passing `raw_source=None` does not
+help either: `add_window_features`
 then fails on its default `wet_columns=("rain_flag",)`, and substituting the
 `rain` gauge silently changes the instrument behind `wet_share_5m`,
 `wet_share_10m` and `rain_recency`.
