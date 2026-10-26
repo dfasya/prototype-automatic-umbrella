@@ -15,6 +15,9 @@ scikit-learn==1.6.1
 joblib==1.5.3            # saving the trained model
 tqdm==4.70.0             # walk-forward progress bar
 
+# Hardware: Shelly 2PM Gen4 RPC over HTTP (test_shelly.py)
+requests==2.32.5
+
 # Notebooks and plots
 matplotlib==3.9.4
 ipykernel==6.31.0

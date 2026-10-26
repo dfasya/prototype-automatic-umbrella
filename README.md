@@ -23,9 +23,11 @@ models/umbrella_hmm.joblib
 ```bash
 conda create -n weather_env python=3.9
 conda activate weather_env
-pip install -r requirements.txt
+pip install -r deployment/requirements.txt
 python -m ipykernel install --user --name weather_env --display-name "Python (weather_env)"
 ```
+
+On Linux and the Jetson Orin Nano (connection, Wi-Fi, venv or conda): see [deployment/SETUP.md](deployment/SETUP.md).
 
 Run the notebooks in order with the **weather_env** kernel. Restart the kernel after changing anything in `modules/`.
 
@@ -163,5 +165,7 @@ modules/dataset/split.py          hourly_split, sequence_lengths
 modules/dataset/windowing.py      add_window_features, WINDOW_FEATURES
 modules/model/hmm.py              RidgeGaussianHMM, walk_forward, evaluate, evaluate_actions, train_final, predict_open
 dataset/, simulated_dataset/, labeled_dataset/, models/   data and outputs
+deployment/                       SETUP.md (Jetson + environment), README.md (script usage), runtime modules/ (dataset, inference), run_simulation.py, test_shelly.py (+ modules/fake_shelly.py), models/umbrella_hmm.npz,
+                                  extract_evaluation.py, evaluation_dataset/ (held-out clips)
 legacy/, requirements_legacy.txt  previous 1-minute HMM prototype
 ```
