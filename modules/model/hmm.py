@@ -503,7 +503,7 @@ def evaluate_actions(
     false_open = episodes[episodes["kind"] == "false opening"]
     step = predictions.index.to_series().diff().median()
     hours = len(predictions) * step / pd.Timedelta(hours=1)
-    breaks = np.r_[False, np.diff(predictions.index.asi8) != step.value]
+    breaks = np.r_[False, np.diff(predictions.index.as_unit("ns").asi8) != step.value]
 
     def switches(state: np.ndarray) -> int:
         return int(((np.diff(state.astype(int)) != 0) & ~breaks[1:]).sum())

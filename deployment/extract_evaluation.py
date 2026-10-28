@@ -63,7 +63,7 @@ def load_labeled(directory: Path) -> pd.DataFrame:
 def find_clips(data: pd.DataFrame, step: pd.Timedelta, horizon: pd.Timedelta) -> pd.DataFrame:
     """Every unbroken stretch of non-training rows, with its phases and a summary."""
     held_out = (data["split"] != "train").to_numpy()
-    t = data.index.asi8
+    t = data.index.as_unit("ns").asi8
     starts = np.r_[True, (np.diff(t) != step.value) | (held_out[1:] != held_out[:-1])]
     run = np.cumsum(starts)
 

@@ -152,7 +152,7 @@ def contiguous_runs(timestamps: pd.Series, valid: pd.Series) -> list[np.ndarray]
     """Row positions of maximal runs that are valid and spaced exactly 60 s apart."""
     ts = pd.DatetimeIndex(timestamps)
     valid = np.asarray(valid, dtype=bool)
-    step_ok = np.r_[False, np.diff(ts.asi8) == 60 * 10**9]
+    step_ok = np.r_[False, np.diff(ts.as_unit("ns").asi8) == 60 * 10**9]
     breaks = ~valid | ~np.r_[False, valid[:-1]] | ~step_ok
     run_id = np.cumsum(breaks)
     positions = np.flatnonzero(valid)

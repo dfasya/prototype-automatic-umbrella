@@ -70,8 +70,8 @@ def hourly_split(
 
     if gap_minutes > 0 and len(eval_starts):
         gap = pd.Timedelta(minutes=gap_minutes)
-        t = df.index.asi8
-        starts = eval_starts.asi8
+        t = df.index.as_unit("ns").asi8
+        starts = eval_starts.as_unit("ns").asi8
         hour = pd.Timedelta(hours=1).value
         # Nearest evaluation hour starting at or before t, and the next one after t.
         prev_i = np.searchsorted(starts, t, side="right") - 1
@@ -96,5 +96,5 @@ def sequence_lengths(index: pd.DatetimeIndex, step: pd.Timedelta) -> np.ndarray:
     """
     if len(index) == 0:
         return np.array([], dtype=int)
-    breaks = np.flatnonzero(np.diff(index.asi8) != step.value) + 1
+    breaks = np.flatnonzero(np.diff(index.as_unit("ns").asi8) != step.value) + 1
     return np.diff(np.r_[0, breaks, len(index)])

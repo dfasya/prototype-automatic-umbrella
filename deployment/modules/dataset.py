@@ -105,7 +105,7 @@ def _validate(df: pd.DataFrame, source: str) -> None:
 
 def _segments(index: pd.DatetimeIndex, step: pd.Timedelta, clip_id: pd.Series | None) -> np.ndarray:
     """Number the unbroken stretches: a new one at every clip and every time jump."""
-    breaks = np.r_[True, np.diff(index.asi8) != step.value]
+    breaks = np.r_[True, np.diff(index.as_unit("ns").asi8) != step.value]
     if clip_id is not None:
         ids = clip_id.to_numpy()
         breaks |= np.r_[True, ids[1:] != ids[:-1]]
